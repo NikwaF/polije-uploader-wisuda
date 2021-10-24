@@ -3,10 +3,12 @@ const cheerio = require('cheerio');
 const FormData = require('form-data');
 const fs = require('fs');
 const path = require('path');
-const cookie = "PHPSESSID=gkvs5v6u5m21sfmfkucjabmve5";
+const login = require('./login');
+const prompt = require('prompt');
+let cookie = "";
 
 const getForm  = () => new Promise((resolve,reject) => { 
-    fetch("https://sim-online.polije.ac.id/entry_wisuda.php?valTahun=2021&valSemester=2&sid=0.23365284578861556", {
+    fetch("https://sim-online.polije.ac.id/entry_wisuda.php?valTahun=2021&valSemester=1&sid=0.23365284578861556", {
         "headers": {
             "accept": "*/*",
             "accept-language": "en-US,en;q=0.9",
@@ -76,28 +78,101 @@ const submitForm  = (form) => new Promise((resolve,reject) => {
       .catch(err => console.log(err))
 });
 
+const setCookie = cookie1 => { 
+  cookie = cookie1;
+};
+
+const writeCookieFile = () => {
+  fs.writeFileSync(path.join(__dirname,'cookie.txt'),cookie,{encoding:'utf8',flag:'w'});
+};
+
+const userLogin = () => new Promise(async (resolve,reject) => {
+  const cookie = await login.getCookie();
+  const cookienya = cookie[0].split(';')[0];
+
+  prompt.start();
+  const properties = [
+    {
+        name: 'nim'
+    },
+    {
+        name: 'password',
+        hidden: true
+    }
+  ];
+
+  const random = Math.random();
+  const {nim, password} = await prompt.get(properties);
+
+  const logins = await login.login(nim,password,random,cookienya);
+
+  if(logins.trim() != 'salah'){
+    const dashboard = await login.sendData(nim,password,cookie);  
+    console.log(`[#] ${dashboard}`);  
+  }
+  
+  resolve({cookie:cookienya,status:logins.trim()} );
+});
+
 
 (async ()=> {
+
+    if(fs.existsSync(path.join(__dirname,'cookie.txt'))){
+      let dataCookie = fs.readFileSync(path.join(__dirname,'cookie.txt'), 'utf8');
+      const dataDashboard = await login.dashboardData(dataCookie);
+      if(dataDashboard == ""){
+        let bener = false;
+        while(!bener){
+          const userlogin = await userLogin();
+          if(userlogin.status !== "salah"){
+            dataCookie = userlogin.cookie;
+            writeCookieFile();
+            bener = true;
+          }else{ 
+            console.log("[!!] nim atau password anda salah, silahkan coba lagi");
+          }
+        }
+      } 
+      console.log(`[#] ${dataDashboard}`);  
+      setCookie(dataCookie);
+    } else { 
+      let bener = false;
+      while(!bener){
+        const userlogin = await userLogin();
+        if(userlogin.status !== "salah"){
+          dataCookie = userlogin.cookie;
+          console.log(dataCookie);
+          setCookie(dataCookie);
+          writeCookieFile();
+          bener = true;
+        }else{ 
+          console.log("[!!] nim atau password anda salah, silahkan coba lagi");
+        }
+      }
+    }
+
     const formlabel = await getForm();
     const directoryPath = path.join(__dirname, 'file');
+
+    console.log(formlabel);
     
-    fs.readdir(directoryPath, function (err, files) {
-        if (err) {
-            return console.log('Unable to scan directory: ' + err);
-        } 
+    // fs.readdir(directoryPath, function (err, files) {
+    //     if (err) {
+    //         return console.log('Unable to scan directory: ' + err);
+    //     } 
 
-        files.forEach( async function (file,i) {
-            const angka = file.split('.')[0] * 1;
+    //     files.forEach( async function (file,i) {
+    //         const angka = file.split('.')[0] * 1;
 
-            console.log("uploading "+file);
-            const filePath = path.join(__dirname, 'file',file);
-            const fileStream = fs.createReadStream(filePath);
+    //         console.log("uploading "+file);
+    //         const filePath = path.join(__dirname, 'file',file);
+    //         const fileStream = fs.createReadStream(filePath);
 
-            const hola = new FormData();
-            hola.append(formlabel[angka -1].hiddenlabel,1);
-            hola.append(formlabel[angka -1].filelabel, fileStream);
+    //         const hola = new FormData();
+    //         hola.append(formlabel[angka -1].hiddenlabel,1);
+    //         hola.append(formlabel[angka -1].filelabel, fileStream);
 
-            await submitForm(hola)
-        });
-    });
+    //         await submitForm(hola)
+    //     });
+    // });
 })();
