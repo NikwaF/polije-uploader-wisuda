@@ -135,12 +135,12 @@ const userLogin = () => new Promise(async (resolve,reject) => {
             console.log("[!!] nim atau password anda salah, silahkan coba lagi");
           }
         }
-        return;
-      } 
-
-      const cobanim = dataDashboard.split('(');
-      nim = cobanim[cobanim.length -1].slice(0, -1);
-      console.log(dataDashboard);
+      } else { 
+        const cobanim = dataDashboard.split('(');
+        nim = cobanim[cobanim.length -1].slice(0, -1);
+        console.log(`[#] ${dataDashboard}`);  
+      }
+      
       setCookie(dataCookie);
     } else { 
       let bener = false;
