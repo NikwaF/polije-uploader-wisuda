@@ -126,6 +126,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
           const userlogin = await userLogin();
           if(userlogin.status !== "salah"){
             dataCookie = userlogin.cookie;
+            setCookie(dataCookie);
             writeCookieFile();
             bener = true;
           }else{ 
@@ -133,7 +134,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
           }
         }
       } 
-      console.log(`[#] ${dataDashboard}`);  
+
       setCookie(dataCookie);
     } else { 
       let bener = false;
@@ -162,7 +163,12 @@ const userLogin = () => new Promise(async (resolve,reject) => {
         files.forEach( async function (file,i) {
             const angka = file.split('.')[0] * 1;
 
-            console.log("uploading "+file);
+            if(angka -1 > formlabel.length -1 ){
+              console.log("[-] file "+file + " diskip karena form unggahan hanya ada "+formlabel.length);
+              return;
+            }
+
+            console.log("[+] uploading "+file);
             const filePath = path.join(__dirname, 'file',file);
             const fileStream = fs.createReadStream(filePath);
 
