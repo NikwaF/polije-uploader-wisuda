@@ -153,26 +153,24 @@ const userLogin = () => new Promise(async (resolve,reject) => {
 
     const formlabel = await getForm();
     const directoryPath = path.join(__dirname, 'file');
-
-    console.log(formlabel);
     
-    // fs.readdir(directoryPath, function (err, files) {
-    //     if (err) {
-    //         return console.log('Unable to scan directory: ' + err);
-    //     } 
+    fs.readdir(directoryPath, function (err, files) {
+        if (err) {
+            return console.log('Unable to scan directory: ' + err);
+        } 
 
-    //     files.forEach( async function (file,i) {
-    //         const angka = file.split('.')[0] * 1;
+        files.forEach( async function (file,i) {
+            const angka = file.split('.')[0] * 1;
 
-    //         console.log("uploading "+file);
-    //         const filePath = path.join(__dirname, 'file',file);
-    //         const fileStream = fs.createReadStream(filePath);
+            console.log("uploading "+file);
+            const filePath = path.join(__dirname, 'file',file);
+            const fileStream = fs.createReadStream(filePath);
 
-    //         const hola = new FormData();
-    //         hola.append(formlabel[angka -1].hiddenlabel,1);
-    //         hola.append(formlabel[angka -1].filelabel, fileStream);
+            const hola = new FormData();
+            hola.append(formlabel[angka -1].hiddenlabel,1);
+            hola.append(formlabel[angka -1].filelabel, fileStream);
 
-    //         await submitForm(hola)
-    //     });
-    // });
+            await submitForm(hola)
+        });
+    });
 })();
