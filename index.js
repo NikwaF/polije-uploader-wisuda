@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const login = require('./login');
 const prompt = require('prompt');
+const datadiri = require('./datadiri');
 let cookie = "";
 
 const getForm  = () => new Promise((resolve,reject) => { 
@@ -111,12 +112,12 @@ const userLogin = () => new Promise(async (resolve,reject) => {
     console.log(`[#] ${dashboard}`);  
   }
   
-  resolve({cookie:cookienya,status:logins.trim()} );
+  resolve({nim,cookie:cookienya,status:logins.trim()} );
 });
 
 
 (async ()=> {
-
+    let nim;
     if(fs.existsSync(path.join(__dirname,'cookie.txt'))){
       let dataCookie = fs.readFileSync(path.join(__dirname,'cookie.txt'), 'utf8');
       const dataDashboard = await login.dashboardData(dataCookie);
@@ -126,6 +127,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
           const userlogin = await userLogin();
           if(userlogin.status !== "salah"){
             dataCookie = userlogin.cookie;
+            nim = userlogin.nim;
             setCookie(dataCookie);
             writeCookieFile();
             bener = true;
@@ -133,8 +135,12 @@ const userLogin = () => new Promise(async (resolve,reject) => {
             console.log("[!!] nim atau password anda salah, silahkan coba lagi");
           }
         }
+        return;
       } 
 
+      const cobanim = dataDashboard.split('(');
+      nim = cobanim[cobanim.length -1].slice(0, -1);
+      console.log(dataDashboard);
       setCookie(dataCookie);
     } else { 
       let bener = false;
@@ -142,7 +148,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
         const userlogin = await userLogin();
         if(userlogin.status !== "salah"){
           dataCookie = userlogin.cookie;
-          console.log(dataCookie);
+          nim = userlogin.nim;
           setCookie(dataCookie);
           writeCookieFile();
           bener = true;
@@ -153,12 +159,18 @@ const userLogin = () => new Promise(async (resolve,reject) => {
     }
 
     const formlabel = await getForm();
-    const directoryPath = path.join(__dirname, 'file');
-
     if(formlabel.length == 0){
       console.log("[!] Belum bisa akses form Unggahan Wisuda");
       return;
     }
+
+    if(await datadiri.entryData(nim,2021,1)){
+      console.log("[+] Berhasil Update Data Diri dari datadiri.json\n");
+    } else { 
+      console.log("[!] Tidak Berhasil Update Data Diri");
+    }
+
+    const directoryPath = path.join(__dirname, 'file');
     
     fs.readdir(directoryPath, function (err, files) {
         if (err) {
