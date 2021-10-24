@@ -154,13 +154,18 @@ const userLogin = () => new Promise(async (resolve,reject) => {
 
     const formlabel = await getForm();
     const directoryPath = path.join(__dirname, 'file');
+
+    if(formlabel.length == 0){
+      console.log("[!] Belum bisa akses form Unggahan Wisuda");
+      return;
+    }
     
     fs.readdir(directoryPath, function (err, files) {
         if (err) {
             return console.log('Unable to scan directory: ' + err);
         } 
 
-        files.forEach( async function (file,i) {
+        files.forEach(file => {
             const angka = file.split('.')[0] * 1;
 
             if(angka -1 > formlabel.length -1 ){
@@ -176,7 +181,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
             hola.append(formlabel[angka -1].hiddenlabel,1);
             hola.append(formlabel[angka -1].filelabel, fileStream);
 
-            await submitForm(hola)
+            submitForm(hola)
         });
     });
 })();
