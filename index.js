@@ -68,6 +68,7 @@ const submitForm  = (form) => new Promise((resolve,reject) => {
           "sec-fetch-user": "?1",
           "sec-gpc": "1",
           "upgrade-insecure-requests": "1",
+          Connection: "keep-alive",
           "cookie": cookie,
           "Referer": "https://sim-online.polije.ac.id/mEntry_Wisuda.php",
           "Referrer-Policy": "strict-origin-when-cross-origin"
@@ -177,15 +178,19 @@ const userLogin = () => new Promise(async (resolve,reject) => {
             return console.log('Unable to scan directory: ' + err);
         } 
 
-        files.forEach(file => {
+        files.forEach((file,i) => {
             const angka = file.split('.')[0] * 1;
+
+            if(angka < 1){
+              return;
+            }
 
             if(angka -1 > formlabel.length -1 ){
               console.log("[-] file "+file + " diskip karena form unggahan hanya ada "+formlabel.length);
               return;
             }
 
-            console.log("[+] uploading "+file);
+            console.log("["+(i+1)+"] uploading "+file);
             const filePath = path.join(__dirname, 'file',file);
             const fileStream = fs.createReadStream(filePath);
 
