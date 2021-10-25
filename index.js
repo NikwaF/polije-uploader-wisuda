@@ -181,7 +181,7 @@ const userLogin = () => new Promise(async (resolve,reject) => {
         files.forEach((file,i) => {
             const angka = file.split('.')[0] * 1;
 
-            if(angka < 1){
+            if(angka < 1 || isNaN(angka)){
               return;
             }
 
